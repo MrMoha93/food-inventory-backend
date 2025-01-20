@@ -1,12 +1,11 @@
 import express from "express";
 import categories from "./routes/categories";
 import foods from "./routes/foods";
-import { PrismaClient } from "@prisma/client";
+import cors from "cors";
 
 const app = express();
 
-const prisma = new PrismaClient();
-
+app.use(cors());
 app.use(express.json());
 app.use("/api/categories", categories);
 app.use("/api/foods", foods);
