@@ -121,7 +121,7 @@ router.put("/:id", (req, res) => {
   const food = foods.find((food) => food._id === req.params.id);
 
   if (!food)
-    return res.status(404).send("The food with the given ID was not found.");
+    return res.status(404).send("The food with the given id was not found.");
 
   // Validera body
   const validation = validate(req.body);
@@ -135,12 +135,22 @@ router.put("/:id", (req, res) => {
   if (!category)
     return res
       .status(404)
-      .send("The category with the given ID was not found.");
+      .send("The category with the given id was not found.");
 
   food.name = req.body.name;
   food.category = category;
   food.price = req.body.price;
   food.numberInStock = req.body.numberInStock;
+
+  return res.send(food);
+});
+
+router.delete("/:id", (req, res) => {
+  const food = foods.find((food) => food._id === req.params.id);
+
+  if (!food)
+    return res.status(404).send("The food with the given id was not found.");
+  foods.splice(foods.indexOf(food), 1);
 
   return res.send(food);
 });
