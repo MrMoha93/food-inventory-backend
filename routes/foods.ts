@@ -109,13 +109,40 @@ router.post("/", (req, res) => {
     name: req.body.name,
     numberInStock: req.body.numberInStock,
     price: req.body.price,
-    // isFavored: false,
     category,
   };
 
   foods.push(food);
 
   return res.status(201).send(food);
+});
+
+router.put("/:id", (req, res) => {
+  const food = foods.find((food) => food._id === req.params.id);
+
+  if (!food)
+    return res.status(404).send("The food with the given ID was not found.");
+
+  // Validera body
+  const validation = validate(req.body);
+
+  if (!validation.success) return res.status(400).send(validation.error.issues);
+
+  const category = getCategories().find(
+    (category) => category._id === req.body.categoryId
+  );
+
+  if (!category)
+    return res
+      .status(404)
+      .send("The category with the given ID was not found.");
+
+  food.name = req.body.name;
+  food.category = category;
+  food.price = req.body.price;
+  food.numberInStock = req.body.numberInStock;
+
+  return res.send(food);
 });
 
 export default router;
