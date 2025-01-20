@@ -1,5 +1,6 @@
 import express from "express";
-import { Category } from "./categories";
+import { Category, getCategories } from "./categories";
+import { validate } from "../schemas/Food";
 
 const router = express.Router();
 
@@ -89,6 +90,32 @@ router.get("/:id", (req, res) => {
   }
 
   return res.send(food);
+});
+
+router.post("/", (req, res) => {
+  const validation = validate(req.body);
+
+  if (!validation.success) return res.status(400).send(validation.error.issues);
+
+  const category = getCategories().find(
+    (category) => category._id === req.body.food.categoryId
+  );
+
+  if (!category)
+    return res.status(404).send("the category with the given id was not found");
+
+  const food: Food = {
+    _id: Date.now().toString(),
+    name: req.body.name,
+    numberInStock: req.body.numberInStock,
+    price: req.body.price,
+    // isFavored: false,
+    category,
+  };
+
+  foods.push(food);
+
+  return res.status(201).send(food);
 });
 
 export default router;

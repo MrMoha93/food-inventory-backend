@@ -4,6 +4,7 @@ import foods from "./routes/foods";
 
 const app = express();
 
+app.use(express.json());
 app.use("/api/categories", categories);
 app.use("/api/foods", foods);
 
