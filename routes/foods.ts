@@ -1,89 +1,20 @@
 import express from "express";
-import { Category, getCategories } from "./categories";
 import { validate } from "../schemas/Food";
+import { PrismaClient } from "@prisma/client";
 
 const router = express.Router();
+const prisma = new PrismaClient();
 
-interface Food {
-  _id: string;
-  name: string;
-  category: Category;
-  numberInStock: number;
-  price: number;
-}
-
-const foods: Food[] = [
-  {
-    _id: "5b21ca3eeb7f6fbccd471815",
-    name: "Apple",
-    category: { _id: "5b21ca3eeb7f6fbccd471818", name: "Fruit" },
-    numberInStock: 6,
-    price: 10,
-  },
-  {
-    _id: "5b21ca3eeb7f6fbccd471816",
-    name: "Banana",
-    category: { _id: "5b21ca3eeb7f6fbccd471818", name: "Fruit" },
-    numberInStock: 5,
-    price: 15,
-  },
-  {
-    _id: "5b21ca3eeb7f6fbccd471817",
-    name: "Cucumber",
-    category: { _id: "5b21ca3eeb7f6fbccd471820", name: "Vegetables" },
-    numberInStock: 8,
-    price: 7,
-  },
-  {
-    _id: "5b21ca3eeb7f6fbccd471819",
-    name: "Chips",
-    category: { _id: "5b21ca3eeb7f6fbccd471814", name: "Snacks" },
-    numberInStock: 7,
-    price: 12,
-  },
-  {
-    _id: "5b21ca3eeb7f6fbccd47181a",
-    name: "Cookies",
-    category: { _id: "5b21ca3eeb7f6fbccd471814", name: "Snacks" },
-    numberInStock: 7,
-    price: 8,
-  },
-  {
-    _id: "5b21ca3eeb7f6fbccd47181b",
-    name: "Muffins",
-    category: { _id: "5b21ca3eeb7f6fbccd471814", name: "Snacks" },
-    numberInStock: 7,
-    price: 13,
-  },
-  {
-    _id: "5b21ca3eeb7f6fbccd47181e",
-    name: "Carrot",
-    category: { _id: "5b21ca3eeb7f6fbccd471820", name: "Vegetables" },
-    numberInStock: 7,
-    price: 7,
-  },
-  {
-    _id: "5b21ca3eeb7f6fbccd47181f",
-    name: "Sallad",
-    category: { _id: "5b21ca3eeb7f6fbccd471820", name: "Vegetables" },
-    numberInStock: 4,
-    price: 14,
-  },
-  {
-    _id: "5b21ca3eeb7f6fbccd471821",
-    name: "Orange",
-    category: { _id: "5b21ca3eeb7f6fbccd471818", name: "Fruit" },
-    numberInStock: 7,
-    price: 20,
-  },
-];
-
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
+  const foods = await prisma.food.findMany({ include: { category: true } });
   return res.send(foods);
 });
 
-router.get("/:id", (req, res) => {
-  const food = foods.find((food) => food._id === req.params.id);
+router.get("/:id", async (req, res) => {
+  const food = await prisma.food.findFirst({
+    where: { id: req.params.id },
+    include: { category: true },
+  });
 
   if (!food) {
     return res.status(404).send("The food with the given id was not found");
@@ -92,67 +23,77 @@ router.get("/:id", (req, res) => {
   return res.send(food);
 });
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const validation = validate(req.body);
 
   if (!validation.success) return res.status(400).send(validation.error.issues);
 
-  const category = getCategories().find(
-    (category) => category._id === req.body.food.categoryId
-  );
+  const category = await prisma.category.findFirst({
+    where: { id: req.body.categoryId },
+  });
 
   if (!category)
     return res.status(404).send("the category with the given id was not found");
 
-  const food: Food = {
-    _id: Date.now().toString(),
-    name: req.body.name,
-    numberInStock: req.body.numberInStock,
-    price: req.body.price,
-    category,
-  };
-
-  foods.push(food);
+  const food = await prisma.food.create({
+    data: {
+      name: req.body.name,
+      numberInStock: req.body.numberInStock,
+      price: req.body.price,
+      categoryId: req.body.categoryId,
+    },
+    include: { category: true },
+  });
 
   return res.status(201).send(food);
 });
 
-router.put("/:id", (req, res) => {
-  const food = foods.find((food) => food._id === req.params.id);
+router.put("/:id", async (req, res) => {
+  const food = await prisma.food.findFirst({
+    where: { id: req.params.id },
+  });
 
   if (!food)
     return res.status(404).send("The food with the given id was not found.");
 
-  // Validera body
   const validation = validate(req.body);
 
   if (!validation.success) return res.status(400).send(validation.error.issues);
 
-  const category = getCategories().find(
-    (category) => category._id === req.body.categoryId
-  );
-
+  const category = await prisma.category.findFirst({
+    where: { id: req.body.categoryId },
+  });
   if (!category)
     return res
       .status(404)
       .send("The category with the given id was not found.");
 
-  food.name = req.body.name;
-  food.category = category;
-  food.price = req.body.price;
-  food.numberInStock = req.body.numberInStock;
+  const updatedFood = await prisma.food.update({
+    where: { id: req.params.id },
+    data: {
+      name: req.body.name,
+      numberInStock: req.body.numberInStock,
+      price: req.body.price,
+      categoryId: req.body.categoryId,
+    },
+  });
 
-  return res.send(food);
+  return res.send(updatedFood);
 });
 
-router.delete("/:id", (req, res) => {
-  const food = foods.find((food) => food._id === req.params.id);
+router.delete("/:id", async (req, res) => {
+  const food = await prisma.food.findFirst({
+    where: { id: req.params.id },
+  });
 
   if (!food)
     return res.status(404).send("The food with the given id was not found.");
-  foods.splice(foods.indexOf(food), 1);
 
-  return res.send(food);
+  const deletedFood = await prisma.food.delete({
+    where: { id: req.params.id },
+  });
+
+  return res.send(deletedFood);
 });
 
 export default router;
