@@ -2,6 +2,7 @@ import express from "express";
 import { validate } from "../schemas/Food";
 import { PrismaClient } from "@prisma/client";
 import auth from "../middleware/auth";
+import admin from "../middleware/admin";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -82,7 +83,7 @@ router.put("/:id", auth, async (req, res) => {
   return res.send(updatedFood);
 });
 
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", auth, admin, async (req, res) => {
   const food = await prisma.food.findFirst({
     where: { id: req.params.id },
   });
