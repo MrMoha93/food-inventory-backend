@@ -15,7 +15,7 @@ app.use("/api/foods", foods);
 app.use("/api/users", users);
 app.use("/api/auth", auth);
 
-const PORT = 5589;
+const PORT = process.env.PORT || 5589;
 
 app.listen(PORT, () => {
   console.log("Listening on port " + PORT);
