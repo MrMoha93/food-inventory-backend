@@ -1,6 +1,7 @@
 import express from "express";
 import { validate } from "../schemas/Food";
 import { PrismaClient } from "@prisma/client";
+import auth from "../middleware/auth";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -10,7 +11,7 @@ router.get("/", async (req, res) => {
   return res.send(foods);
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   const food = await prisma.food.findFirst({
     where: { id: req.params.id },
     include: { category: true },
@@ -23,7 +24,7 @@ router.get("/:id", async (req, res) => {
   return res.send(food);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const validation = validate(req.body);
 
   if (!validation.success) return res.status(400).send(validation.error.issues);
@@ -48,7 +49,7 @@ router.post("/", async (req, res) => {
   return res.status(201).send(food);
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, async (req, res) => {
   const food = await prisma.food.findFirst({
     where: { id: req.params.id },
   });
@@ -81,7 +82,7 @@ router.put("/:id", async (req, res) => {
   return res.send(updatedFood);
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   const food = await prisma.food.findFirst({
     where: { id: req.params.id },
   });
