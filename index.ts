@@ -8,7 +8,16 @@ import cors from "cors";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5589",
+      "http://localhost:5173",
+      "http://localhost:4173",
+      "https://foodventory-frontend.onrender.com",
+    ],
+  })
+);
 app.use(express.json());
 app.use("/api/categories", categories);
 app.use("/api/foods", foods);
