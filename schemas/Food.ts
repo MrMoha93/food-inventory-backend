@@ -12,6 +12,7 @@ const schema = z.object({
     .number()
     .min(1, { message: "Price cannot be higher than 1" })
     .max(100, { message: "Price cannot be higher than 20" }),
+  imageUrl: z.string().min(1, { message: "Image is required" }),
 });
 
 type FormData = z.infer<typeof schema>;

@@ -10,5 +10,3 @@ router.get("/", async (req, res) => {
 });
 
 export default router;
-
-//15:07

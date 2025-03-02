@@ -43,6 +43,7 @@ router.post("/", auth, async (req, res) => {
       numberInStock: req.body.numberInStock,
       price: req.body.price,
       categoryId: req.body.categoryId,
+      imageUrl: req.body.imageUrl,
     },
     include: { category: true },
   });
@@ -77,6 +78,7 @@ router.put("/:id", auth, async (req, res) => {
       numberInStock: req.body.numberInStock,
       price: req.body.price,
       categoryId: req.body.categoryId,
+      imageUrl: req.body.imageUrl,
     },
   });
 

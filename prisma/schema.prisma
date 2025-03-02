@@ -26,6 +26,7 @@ model Food {
   name          String
   numberInStock Int
   price         Int
+  imageUrl      String
   categoryId    String
   category      Category @relation(fields: [categoryId], references: [id])
 }
