@@ -16,6 +16,7 @@ app.use(
       "http://localhost:5174",
       "http://localhost:4173",
       "https://foodventory-frontend.onrender.com",
+      "https://foods-ecommerce.onrender.com",
     ],
   })
 );
